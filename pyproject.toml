@@ -6,9 +6,22 @@ authors = [
     {name = "Omer Reshef",email = "omerr@getloops.ai"}
 ]
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.11,<4.0"
 dependencies = [
+    "langchain>=0.3.0",
+    "langchain-core>=0.3.0",
+    "langchain-openai>=0.2.0",
+    "pydantic>=2.9.0",
+    "fastapi>=0.100.0",
+    "uvicorn>=0.23.0",
+    "python-dotenv>=1.0.0",
+    "pydantic-settings>=2.0.0",
+    "nba-api (>=1.11.4,<2.0.0)",
+    "tavily-python (>=0.7.23,<0.8.0)"
 ]
+
+[tool.poetry]
+package-mode = false
 
 
 [build-system]

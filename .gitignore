@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+.env
+
+# IDEs
+.idea/
+.vscode/
+
+# Node
+node_modules/
+dist/
+
+# Logs
+*.log
+nohup.out
