@@ -49,18 +49,25 @@ The project follows a modular architecture designed for scalability and maintain
     ```
 
 ### 3. Execution
-- **Start the Backend**:
-  ```bash
-  python main.py
-  ```
-  The API will be available at `http://localhost:8000`.
 
-- **Start the Frontend** (optional):
+- **Recommended: Start Both with One Command**:
   ```bash
-  cd frontend
-  npm install
-  npm run dev
+  bash start.sh
   ```
+  This handles starting the FastAPI backend (port 8000) and the Vite frontend (port 5173) in parallel using `poetry` and `npm`.
+
+- **Manual Start**:
+  - **Start the Backend Only**:
+    ```bash
+    python main.py
+    # OR
+    poetry run uvicorn main:app --reload --port 8000
+    ```
+  - **Start the Frontend Only**:
+    ```bash
+    cd frontend
+    npm run dev
+    ```
 
 ## Future Enhancements
 - **Persistent Storage**: Migration from in-memory session history to a database (Redis or PostgreSQL).
