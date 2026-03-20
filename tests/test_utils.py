@@ -2,7 +2,7 @@
 
 import json
 import pytest
-from utils import tool_error, format_json
+from api.utils import tool_error, format_json
 
 
 class TestToolError:
