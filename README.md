@@ -1,6 +1,20 @@
 # NBA Agent
 
-A conversational AI agent built with LangChain that provides real-time NBA information, player statistics, and team data. It features a sophisticated reasoning loop and session-based chat history.
+> **TL;DR** — A conversational AI agent for NBA fans. Ask about any player or team, get real-time stats and news with clickable follow-up questions. Built with LangChain + FastAPI + React. Run it with a single command: `bash start.sh`.
+
+---
+
+## What's Cool About This Project
+
+- 🧠 **Chain-of-Thought Reasoning** — Before every answer, the agent uses a `think` tool to reason step-by-step. Hover over the 🤖 icon to see its internal reasoning.
+- 🏀 **Real NBA Data** — Pulls live player/team stats from the official NBA API, no fake data.
+- 🔍 **Web Search** — Searches the web via Tavily for current scores, trades, and breaking news.
+- 💬 **Session Memory** — The agent remembers context within a conversation (powered by `RunnableWithMessageHistory`).
+- 🎯 **Follow-up Pills** — Every response ends with 2 clickable follow-up questions, making exploration frictionless.
+- 🔒 **Anti-Hallucination** — System prompt strictly enforces tool-only responses; the LLM cannot use internal knowledge for stats.
+- 🧪 **Unit Tests** — Tool functions are fully covered with mocked NBA API calls (`pytest tests/`).
+
+---
 
 ## Architecture
 
@@ -18,35 +32,35 @@ The project follows a modular architecture designed for scalability and maintain
 - `config.py`: Centralized configuration management using Pydantic Settings.
 - `prompts.py`: Central repository for all system prompts and documentation strings.
 - `utils.py`: Common helpers for JSON formatting, error handling, and tool decorators.
+- `tests/`: Unit tests for tools and utilities (no network calls required).
 
 ## Tools
 
-1.  **think**: A specialized tool that allows the agent to record and display its internal reasoning steps.
-2.  **get_player_info**: Retrieves IDs and basic details for NBA players.
-3.  **get_team_info**: Fetches core data for NBA teams.
-4.  **get_player_career_stats**: Provides summarized career statistics (points, assists, rebounds, etc.).
-5.  **web_search**: Powered by Tavily, enabling the agent to access current NBA news and real-time events.
+1. **think**: Allows the agent to record and display its internal reasoning steps before responding.
+2. **get_player_info**: Retrieves IDs and basic details for NBA players.
+3. **get_team_info**: Fetches core data for NBA teams.
+4. **get_player_career_stats**: Provides summarized career statistics (points, assists, rebounds, etc.).
+5. **web_search**: Powered by Tavily, enabling the agent to access current NBA news and real-time events.
 
 ## How to Run
 
 ### 1. Prerequisites
 - Python 3.10 or higher.
-- A virtual environment (recommended).
+- Node.js 18+ for the frontend.
 
 ### 2. Setup
-1.  **Install dependencies**:
-    ```bash
-    pip install -r requirements.txt
-    # OR if using poetry
-    poetry install
-    ```
-2.  **Configure Environment**:
-    Create a `.env` file in the root directory:
-    ```env
-    OPENROUTER_API_KEY=your_openrouter_key
-    TAVILY_API_KEY=your_tavily_key
-    MODEL_NAME=openai/gpt-4o-mini
-    ```
+1. **Install dependencies**:
+   ```bash
+   poetry install       # Python backend
+   cd frontend && npm install  # React frontend
+   ```
+2. **Configure Environment**:
+   Create a `.env` file in the root directory:
+   ```env
+   OPENROUTER_API_KEY=your_openrouter_key
+   TAVILY_API_KEY=your_tavily_key
+   MODEL_NAME=openai/gpt-4o-mini
+   ```
 
 ### 3. Execution
 
@@ -54,23 +68,20 @@ The project follows a modular architecture designed for scalability and maintain
   ```bash
   bash start.sh
   ```
-  This handles starting the FastAPI backend (port 8000) and the Vite frontend (port 5173) in parallel using `poetry` and `npm`.
+  This handles starting the FastAPI backend (port 8000) and the Vite frontend (port 5173) in parallel.
 
 - **Manual Start**:
-  - **Start the Backend Only**:
-    ```bash
-    python main.py
-    # OR
-    poetry run uvicorn main:app --reload --port 8000
-    ```
-  - **Start the Frontend Only**:
-    ```bash
-    cd frontend
-    npm run dev
-    ```
+  - Backend: `poetry run uvicorn main:app --reload --port 8000`
+  - Frontend: `cd frontend && npm run dev`
+
+### 4. Running Tests
+```bash
+pytest tests/ -v   # All unit tests (no server or API keys needed)
+```
 
 ## Future Enhancements
 - **Persistent Storage**: Migration from in-memory session history to a database (Redis or PostgreSQL).
 - **Proactive Insights**: Adding a scheduling layer to alert users of upcoming games or trades.
 - **Rich UI Components**: Supporting player headshots and team logos in the chat interface.
 - **Comparison Engine**: A specialized tool for head-to-head statistical player comparisons.
+- **E2E Testing with Return-Direct flag**: Test the returned tool data directly, bypassing LLM rephrasing.
