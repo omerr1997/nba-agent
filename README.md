@@ -46,12 +46,12 @@ The project follows a modular architecture designed for scalability and maintain
 
 ## Code Structure
 
-- `main.py`: FastAPI server, request validation, and API response formatting.
-- `agent_service.py`: Orchestrates the LangChain agent, LLM configuration, and session history logic.
-- `tools.py`: Definition of all tools available to the agent (NBA API wrappers, web search).
-- `config.py`: Centralized configuration management using Pydantic Settings.
-- `prompts.py`: Central repository for all system prompts and documentation strings.
-- `utils.py`: Common helpers for JSON formatting, error handling, and tool decorators.
+- `api/main_app.py`: FastAPI server, request validation, and API response formatting.
+- `api/agent_service.py`: Orchestrates the LangChain agent, LLM configuration, and session history logic.
+- `api/tools.py`: Definition of all tools available to the agent (NBA API wrappers, web search).
+- `api/config.py`: Centralized configuration management using Pydantic Settings.
+- `api/prompts.py`: Central repository for all system prompts and documentation strings.
+- `api/utils.py`: Common helpers for JSON formatting, error handling, and tool decorators.
 - `tests/`: Unit tests for tools and utilities (no network calls required).
 
 ## Tools
@@ -86,7 +86,7 @@ The project follows a modular architecture designed for scalability and maintain
    | `OPENROUTER_API_KEY` | ✅ Yes | [openrouter.ai/keys](https://openrouter.ai/keys) — Free tier available |
    | `TAVILY_API_KEY` | ⚠️ Optional | [app.tavily.com](https://app.tavily.com) — Needed for `web_search` tool only |
 
-   > All other settings (API base URL, model name) are pre-configured defaults in `config.py`.
+   > All other settings (API base URL, model name) are pre-configured defaults in `api/config.py`.
 
 ### 3. Execution
 
@@ -97,7 +97,7 @@ The project follows a modular architecture designed for scalability and maintain
   This handles starting the FastAPI backend (port 8000) and the Vite frontend (port 5173) in parallel.
 
 - **Manual Start**:
-  - Backend: `poetry run uvicorn main:app --reload --port 8000`
+  - Backend: `poetry run uvicorn api.main_app:app --reload --port 8000`
   - Frontend: `cd frontend && npm run dev`
 
 ### 4. Running Tests
