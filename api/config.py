@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     tavily_api_key: str = ""
     openai_api_base: str = "https://openrouter.ai/api/v1"
     model_name: str = "openai/gpt-4o-mini"
+    max_tokens: int = 4096
 
     # Tool descriptions for the system prompt
     tools_list: str = (
