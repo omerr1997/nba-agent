@@ -105,19 +105,6 @@ The project follows a modular architecture designed for scalability and maintain
 pytest tests/ -v   # All unit tests (no server or API keys needed)
 ```
 
-### 6. Deploying to Vercel
-
-This project is configured for easy deployment to Vercel:
-
-1.  **Push to GitHub**: Ensure all changes are committed and pushed.
-2.  **Import to Vercel**: Connect your repository to Vercel.
-3.  **Environment Variables**: In the Vercel dashboard, add the following environment variables:
-    - `OPENROUTER_API_KEY`
-    - `TAVILY_API_KEY` (optional)
-4.  **Automatic Build**: Vercel will automatically detect the `vercel.json` configuration and build both the FastAPI backend and React frontend.
-
-The backend is served from the `/api` route, and the frontend is served from the root.
-
 ## Future Enhancements
 - **Persistent Storage**: Migration from in-memory session history to a database (Redis or PostgreSQL).
 - **Proactive Insights**: Adding a scheduling layer to alert users of upcoming games or trades.
