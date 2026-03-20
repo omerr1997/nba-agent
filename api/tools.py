@@ -1,6 +1,6 @@
 import json
-import prompts
-from config import settings
+from . import prompts
+from .config import settings
 from tavily import TavilyClient
 from nba_api.stats.static import players, teams
 from nba_api.stats.endpoints import playercareerstats
