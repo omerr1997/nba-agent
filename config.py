@@ -15,9 +15,19 @@ class Settings(BaseSettings):
     )
     current_date: str = datetime.now().strftime("%B %d, %Y")
 
+    # Follow-up parsing constants
+    FOLLOW_UP_INDICATOR: str = "FOLLOW_UP:"
+    FOLLOW_UP_SEP: str = "|"
+
     model_config = SettingsConfigDict(
         env_file=".env", env_file_encoding="utf-8", extra="ignore"
     )
 
+    def setup_environment(self):
+        """Configure external API environments."""
+        os.environ["OPENAI_API_BASE"] = self.openai_api_base
+        os.environ["OPENAI_API_KEY"] = self.openrouter_api_key
+
 
 settings = Settings()
+settings.setup_environment()

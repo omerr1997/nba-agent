@@ -1,17 +1,25 @@
+import logging
+import traceback
+import uvicorn
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from agent_service import get_agent_executor
-import uvicorn
+from config import settings
+
+# Initialize logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = FastAPI(title="NBA Agent API")
 
+# Constants
 THOUGHTS_MAX_LENGTH = 200
 
 # Enable CORS for the React frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, specify the actual origin
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -23,7 +31,6 @@ class ChatRequest(BaseModel):
     session_id: str = "default_session"
 
 
-
 class ChatResponse(BaseModel):
     response: str
     thought: str = ""
@@ -32,6 +39,7 @@ class ChatResponse(BaseModel):
 
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
+    """Process a chat message through the LangChain agent with session-based history."""
     try:
         agent_executor = get_agent_executor()
         result = agent_executor.invoke(
@@ -39,19 +47,20 @@ async def chat(request: ChatRequest):
             config={"configurable": {"session_id": request.session_id}},
         )
 
-
-        # Extract the final output
         full_output = result.get("output", "No response generated.")
 
-        # Parse follow-up questions
+        # Parse follow-up questions using constants from settings
         follow_ups = []
         clean_output = full_output
-        if "FOLLOW_UP:" in full_output:
-            parts = full_output.split("FOLLOW_UP:")
+        if settings.FOLLOW_UP_INDICATOR in full_output:
+            parts = full_output.split(settings.FOLLOW_UP_INDICATOR)
             clean_output = parts[0].strip()
             raw_follows = parts[1].strip()
-            # Split by | and clean up
-            follow_ups = [q.strip() for q in raw_follows.split("|") if q.strip()]
+            follow_ups = [
+                q.strip()
+                for q in raw_follows.split(settings.FOLLOW_UP_SEP)
+                if q.strip()
+            ]
 
         # Format intermediate steps for the "thought" field
         steps = result.get("intermediate_steps", [])
@@ -62,7 +71,6 @@ async def chat(request: ChatRequest):
                 thought_val = getattr(action, "tool_input", "")
                 if isinstance(thought_val, dict):
                     thought_val = thought_val.get("thought", "")
-                # Truncate to first 200 chars for conciseness
                 display_thought = (
                     (thought_val[:THOUGHTS_MAX_LENGTH] + "...")
                     if len(thought_val) > THOUGHTS_MAX_LENGTH
@@ -80,11 +88,9 @@ async def chat(request: ChatRequest):
         )
 
     except Exception as e:
-        print(f"Error occurred: {e}")
-        import traceback
-
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Error occurred during chat processing: {e}")
+        logger.error(traceback.format_exc())
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 if __name__ == "__main__":

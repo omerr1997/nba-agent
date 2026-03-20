@@ -1,14 +1,17 @@
-import prompts
-from nba_api.stats.static import players, teams
-from nba_api.stats.endpoints import playercareerstats, commonplayerinfo
-from utils import nba_tool, tool_error, format_json
 import json
+import prompts
+from config import settings
+from tavily import TavilyClient
+from nba_api.stats.static import players, teams
+from nba_api.stats.endpoints import playercareerstats
+from utils import nba_tool, tool_error, format_json
 
 
 @nba_tool(prompts.GET_PLAYER_INFO_DOC)
 def get_player_info(full_name: str | None = None) -> str:
+    """Fetch basic player information by name."""
     try:
-        if full_name == "":
+        if full_name == "" or full_name is None:
             found_players = players.get_players()
         else:
             found_players = players.find_players_by_full_name(full_name)
@@ -23,6 +26,7 @@ def get_player_info(full_name: str | None = None) -> str:
 
 @nba_tool(prompts.GET_TEAM_INFO_DOC)
 def get_team_info(team_name: str | None = None) -> str:
+    """Fetch basic team information by name."""
     try:
         if team_name == "" or team_name is None:
             found_teams = teams.get_teams()
@@ -39,6 +43,7 @@ def get_team_info(team_name: str | None = None) -> str:
 
 @nba_tool(prompts.GET_PLAYER_CAREER_STATS_DOC)
 def get_player_career_stats(player_id: int) -> str:
+    """Fetch career statistics for a specific player ID."""
     try:
         career = playercareerstats.PlayerCareerStats(player_id=player_id)
         df = career.get_data_frames()[0]
@@ -75,15 +80,11 @@ def think(thought: str) -> str:
 
 @nba_tool(prompts.WEB_SEARCH_DOC)
 def web_search(query: str) -> str:
-    """Search the web for fresh NBA information."""
+    """Search the web for fresh NBA information using Tavily."""
     try:
-        from tavily import TavilyClient
-        from config import settings
-
         client = TavilyClient(api_key=settings.tavily_api_key)
         response = client.search(query=query, search_depth="advanced")
 
-        # Format the results into a readable string
         results = response.get("results", [])
         if not results:
             return f"No search results found for '{query}'."
