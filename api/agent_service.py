@@ -26,7 +26,6 @@ def get_agent_executor():
     llm = ChatOpenAI(
         model=settings.model_name,
         temperature=0,
-        max_tokens=settings.max_tokens,
     )
 
     tools = [get_player_info, get_team_info, get_player_career_stats, think, web_search]
