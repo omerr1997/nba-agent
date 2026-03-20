@@ -85,6 +85,20 @@ The project follows a modular architecture designed for scalability and maintain
 pytest tests/ -v   # All unit tests (no server or API keys needed)
 ```
 
+### 5. Running in Production
+
+Use `start_prod.sh` which builds the frontend statically and runs `uvicorn` with multiple workers (no `--reload`):
+
+```bash
+CORS_ORIGINS=https://yourfrontend.com bash start_prod.sh
+```
+
+| Env Var | Default | Description |
+|---------|---------|-------------|
+| `CORS_ORIGINS` | `*` | Comma-separated list of allowed origins |
+| `PORT` | `8000` | Backend server port |
+| `WORKERS` | `2` | Number of uvicorn worker processes |
+
 ## Future Enhancements
 - **Persistent Storage**: Migration from in-memory session history to a database (Redis or PostgreSQL).
 - **Proactive Insights**: Adding a scheduling layer to alert users of upcoming games or trades.

@@ -16,10 +16,11 @@ app = FastAPI(title="NBA Agent API")
 # Constants
 THOUGHTS_MAX_LENGTH = 200
 
-# Enable CORS for the React frontend
+# CORS: configurable via CORS_ORIGINS env var in production
+_cors_origins = [o.strip() for o in settings.cors_origins.split(",")]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
