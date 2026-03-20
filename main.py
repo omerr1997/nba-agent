@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from agent_service import get_agent_executor
 from config import settings
+from tools import get_player_info, get_team_info, get_player_career_stats
 
 # Initialize logging
 logging.basicConfig(level=logging.INFO)
@@ -15,6 +16,7 @@ app = FastAPI(title="NBA Agent API")
 
 # Constants
 THOUGHTS_MAX_LENGTH = 200
+TEST_SESSION_ID = "-1"  # Magic session ID that bypasses the LLM for deterministic E2E testing
 
 # Enable CORS for the React frontend
 app.add_middleware(
@@ -41,6 +43,10 @@ class ChatResponse(BaseModel):
 async def chat(request: ChatRequest):
     """Process a chat message through the LangChain agent with session-based history."""
     try:
+        # Test mode: bypass LLM entirely and return raw tool output for deterministic E2E testing
+        if request.session_id == TEST_SESSION_ID:
+            return _handle_test_mode(request.message)
+
         agent_executor = get_agent_executor()
         result = agent_executor.invoke(
             {"input": request.message},
@@ -87,10 +93,47 @@ async def chat(request: ChatRequest):
             response=clean_output, thought=thought_flow, follow_ups=follow_ups
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error occurred during chat processing: {e}")
         logger.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail="Internal server error")
+
+
+def _handle_test_mode(message: str) -> ChatResponse:
+    """Direct tool invocation for E2E testing — bypasses the LLM entirely.
+
+    The message must be in the format: 'TOOL_NAME:argument'.
+    Supported commands:
+      - get_player_info:LeBron James
+      - get_team_info:Los Angeles Lakers
+      - get_player_career_stats:2544
+    """
+    if ":" not in message:
+        raise HTTPException(
+            status_code=400,
+            detail="Test mode requires format 'TOOL_NAME:argument'",
+        )
+
+    tool_name, _, arg = message.partition(":")
+    tool_name = tool_name.strip()
+    arg = arg.strip()
+
+    tool_map = {
+        "get_player_info": lambda: get_player_info.invoke({"full_name": arg}),
+        "get_team_info": lambda: get_team_info.invoke({"team_name": arg}),
+        "get_player_career_stats": lambda: get_player_career_stats.invoke({"player_id": int(arg)}),
+    }
+
+    if tool_name not in tool_map:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unknown tool '{tool_name}'. Valid tools: {list(tool_map.keys())}",
+        )
+
+    raw_result = tool_map[tool_name]()
+    return ChatResponse(response=raw_result)
 
 
 if __name__ == "__main__":
