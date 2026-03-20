@@ -39,7 +39,7 @@ def get_agent_executor():
     agent = create_react_agent(
         llm, 
         tools, 
-        state_modifier=system_message,
+        prompt=system_message,
         checkpointer=memory
     )
 
