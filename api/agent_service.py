@@ -1,23 +1,16 @@
 import os
 from langchain_openai import ChatOpenAI
-from langchain.agents import AgentExecutor
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_core.runnables.history import RunnableWithMessageHistory
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_community.chat_message_histories import ChatMessageHistory
+from langgraph.prebuilt import create_react_agent
+from langgraph.checkpoint.memory import MemorySaver
 from .config import settings
 from . import prompts
 from .tools import get_player_info, get_team_info, get_player_career_stats, think, web_search
-from langchain.agents.format_scratchpad.tools import format_to_tool_messages
-from langchain.agents.output_parsers.tools import ToolsAgentOutputParser
 
-# Constants for session management
-SESSION_INPUT_KEY = "input"
-SESSION_HISTORY_KEY = "chat_history"
-SESSION_OUTPUT_KEY = "output"
-
-# Global dictionary to store session history in memory
+# Global dictionary to store session history in memory (for local dev; Vercel is stateless)
 session_histories = {}
-
 
 def get_session_history(session_id: str):
     """Retrieve or create chat history for a given session."""
@@ -25,9 +18,11 @@ def get_session_history(session_id: str):
         session_histories[session_id] = ChatMessageHistory()
     return session_histories[session_id]
 
+# LangGraph checkpointer for state management
+memory = MemorySaver()
 
 def get_agent_executor():
-    """Build the conversational agent with structured reasoning and tool support."""
+    """Build the conversational agent using LangGraph's prebuilt ReAct agent."""
     llm = ChatOpenAI(
         model=settings.model_name,
         temperature=0,
@@ -35,49 +30,17 @@ def get_agent_executor():
 
     tools = [get_player_info, get_team_info, get_player_career_stats, think, web_search]
 
-    prompt_text = prompts.SYSTEM_PROMPT.format(
+    system_message = prompts.SYSTEM_PROMPT.format(
         tools_list=settings.tools_list, current_date=settings.current_date
     )
 
-    prompt = ChatPromptTemplate.from_messages(
-        [
-            ("system", prompt_text),
-            MessagesPlaceholder(variable_name=SESSION_HISTORY_KEY, optional=True),
-            ("human", "{input}"),
-            MessagesPlaceholder(variable_name="agent_scratchpad"),
-        ]
+    # Create the LangGraph ReAct agent
+    # We use the checkpointer to manage history automatically
+    agent = create_react_agent(
+        llm, 
+        tools, 
+        state_modifier=system_message,
+        checkpointer=memory
     )
 
-    llm_with_tools = llm.bind_tools(tools)
-
-    # Simplified agent chain
-    agent = (
-        {
-            SESSION_INPUT_KEY: lambda x: x["input"],
-            SESSION_HISTORY_KEY: lambda x: x.get("chat_history", []),
-            "agent_scratchpad": lambda x: format_to_tool_messages(
-                x["intermediate_steps"]
-            ),
-        }
-        | prompt
-        | llm_with_tools
-        | ToolsAgentOutputParser()
-    )
-
-    executor = AgentExecutor(
-        agent=agent,
-        tools=tools,
-        verbose=True,
-        handle_parsing_errors=True,
-        return_intermediate_steps=True,
-    )
-
-    return RunnableWithMessageHistory(
-        executor,
-        get_session_history,
-        input_messages_key=SESSION_INPUT_KEY,
-        history_messages_key=SESSION_HISTORY_KEY,
-        output_messages_key=SESSION_OUTPUT_KEY,
-    )
-
-
+    return agent
