@@ -1,0 +1,14 @@
+pyproject.toml
+poetry.lock
+frontend/node_modules
+frontend/dist
+.venv
+venv
+__pycache__
+*.pyc
+.pytest_cache
+tests
+records
+.idea
+.vscode
+.env
