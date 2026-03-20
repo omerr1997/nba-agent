@@ -55,12 +55,18 @@ The project follows a modular architecture designed for scalability and maintain
    cd frontend && npm install  # React frontend
    ```
 2. **Configure Environment**:
-   Create a `.env` file in the root directory:
+   Create a `.env` file in the root directory with **only your API keys**:
    ```env
    OPENROUTER_API_KEY=your_openrouter_key
    TAVILY_API_KEY=your_tavily_key
-   MODEL_NAME=openai/gpt-4o-mini
    ```
+
+   | Key | Required | Where to get it |
+   |-----|----------|-----------------|
+   | `OPENROUTER_API_KEY` | ✅ Yes | [openrouter.ai/keys](https://openrouter.ai/keys) — Free tier available |
+   | `TAVILY_API_KEY` | ⚠️ Optional | [app.tavily.com](https://app.tavily.com) — Needed for `web_search` tool only |
+
+   > All other settings (API base URL, model name) are pre-configured defaults in `config.py`.
 
 ### 3. Execution
 
