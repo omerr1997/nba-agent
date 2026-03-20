@@ -130,7 +130,7 @@ function App() {
       </main>
 
       <footer className="app-footer">
-        Powered by OpenAI & Langchain
+        - NBA Agent by Omer Reshef - 2026
       </footer>
     </div>
   );

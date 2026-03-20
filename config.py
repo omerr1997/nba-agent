@@ -8,10 +8,6 @@ class Settings(BaseSettings):
     tavily_api_key: str = ""
     openai_api_base: str = "https://openrouter.ai/api/v1"
     model_name: str = "openai/gpt-4o-mini"
-    # Comma-separated list of allowed CORS origins.
-    # Set to your frontend URL in production (e.g. "https://yourapp.com").
-    # Defaults to "*" (allow all) for local development.
-    cors_origins: str = "*"
 
     # Tool descriptions for the system prompt
     tools_list: str = (
